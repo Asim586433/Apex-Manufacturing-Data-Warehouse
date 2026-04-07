@@ -1,0 +1,1824 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Manufacturing Group — Data Warehouse & BI Platform</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   CSS RESET & VARIABLES
+   ═══════════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--bg2:#111827;--bg3:#1a2236;--bg4:#243049;
+  --surface:#1e293b;--surface2:#283548;--surface3:#334155;
+  --border:#334155;--border2:#475569;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --accent:#3b82f6;--accent2:#2563eb;--accent3:#60a5fa;
+  --green:#10b981;--green2:#059669;--green-bg:rgba(16,185,129,.12);
+  --red:#ef4444;--red2:#dc2626;--red-bg:rgba(239,68,68,.12);
+  --yellow:#f59e0b;--yellow-bg:rgba(245,158,11,.12);
+  --orange:#f97316;--orange-bg:rgba(249,115,22,.12);
+  --purple:#8b5cf6;--purple-bg:rgba(139,92,246,.12);
+  --cyan:#06b6d4;--cyan-bg:rgba(6,182,212,.12);
+  --pink:#ec4899;
+  --radius:8px;--radius-lg:12px;--radius-xl:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.4);
+  --transition:all .2s ease;
+  --sidebar-w:260px;--topbar-h:60px;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'Cascadia Code','Fira Code','Consolas',monospace;
+}
+html{font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100vh}
+a{color:var(--accent3);text-decoration:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+.app{display:flex;height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:100}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════ */
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.3}
+.sidebar-logo h1 span{color:var(--accent3)}
+.sidebar-logo p{font-size:.72rem;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section{padding:8px 20px 4px;font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--text2);font-size:.88rem;transition:var(--transition);border-left:3px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--accent3);border-left-color:var(--accent);font-weight:600}
+.nav-item .icon{width:20px;text-align:center;font-size:1rem;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px;font-weight:700}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:.72rem;color:var(--text3)}
+.sidebar-footer .status{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.sidebar-footer .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOPBAR
+   ═══════════════════════════════════════════════════════════════ */
+.topbar-title{font-size:1.1rem;font-weight:700;white-space:nowrap}
+.topbar-filters{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.filter-group{display:flex;align-items:center;gap:6px}
+.filter-group label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.filter-select{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:var(--radius);font-size:.82rem;font-family:var(--font);cursor:pointer;outline:none;min-width:120px}
+.filter-select:focus{border-color:var(--accent)}
+.topbar-actions{display:flex;gap:8px}
+.btn{padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:.82rem;cursor:pointer;font-family:var(--font);transition:var(--transition);display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-success{background:var(--green2);border-color:var(--green);color:#fff}
+.btn-sm{padding:4px 10px;font-size:.75rem}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARDS & GRIDS
+   ═══════════════════════════════════════════════════════════════ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:var(--transition)}
+.card:hover{border-color:var(--border2)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:.92rem;font-weight:600;color:var(--text)}
+.card-subtitle{font-size:.72rem;color:var(--text3);margin-top:2px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:20px}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.full-width{grid-column:1/-1}
+.mb-20{margin-bottom:20px}
+.gap-20{gap:20px}
+
+/* ═══════════════════════════════════════════════════════════════
+   KPI CARDS
+   ═══════════════════════════════════════════════════════════════ */
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.blue::before{background:var(--accent)}
+.kpi-card.green::before{background:var(--green)}
+.kpi-card.red::before{background:var(--red)}
+.kpi-card.yellow::before{background:var(--yellow)}
+.kpi-card.purple::before{background:var(--purple)}
+.kpi-card.cyan::before{background:var(--cyan)}
+.kpi-card.orange::before{background:var(--orange)}
+.kpi-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.kpi-value{font-size:1.7rem;font-weight:700;color:var(--text);line-height:1.2}
+.kpi-change{font-size:.75rem;margin-top:6px;display:flex;align-items:center;gap:4px}
+.kpi-change.up{color:var(--green)}
+.kpi-change.down{color:var(--red)}
+.kpi-sparkline{margin-top:8px;height:30px}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════════════ */
+.data-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.data-table thead{position:sticky;top:0;z-index:2}
+.data-table th{background:var(--bg3);color:var(--text2);font-weight:600;text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table tr:hover td{background:var(--bg3)}
+.data-table .num{text-align:right;font-family:var(--mono);font-size:.82rem}
+.data-table .currency{color:var(--green)}
+.data-table .negative{color:var(--red)}
+.table-container{max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)}
+.table-container::-webkit-scrollbar{width:5px}
+.table-container::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHARTS (Canvas containers)
+   ═══════════════════════════════════════════════════════════════ */
+.chart-container{position:relative;width:100%}
+.chart-container canvas{width:100%!important;display:block}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS BADGES
+   ═══════════════════════════════════════════════════════════════ */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-blue{background:rgba(59,130,246,.12);color:var(--accent3)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+.badge-gray{background:var(--bg3);color:var(--text3)}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROGRESS BARS
+   ═══════════════════════════════════════════════════════════════ */
+.progress-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.progress-fill.green{background:var(--green)}
+.progress-fill.blue{background:var(--accent)}
+.progress-fill.red{background:var(--red)}
+.progress-fill.yellow{background:var(--yellow)}
+
+/* ═══════════════════════════════════════════════════════════════
+   AGING BUCKETS
+   ═══════════════════════════════════════════════════════════════ */
+.aging-bar{display:flex;height:36px;border-radius:var(--radius);overflow:hidden;margin:8px 0}
+.aging-bar .segment{display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;min-width:30px;transition:var(--transition)}
+.aging-bar .segment:hover{filter:brightness(1.2)}
+.aging-bar .seg-current{background:var(--green)}
+.aging-bar .seg-30{background:var(--accent)}
+.aging-bar .seg-60{background:var(--yellow)}
+.aging-bar .seg-90{background:var(--orange)}
+.aging-bar .seg-over{background:var(--red)}
+.aging-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.aging-legend span{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text2)}
+.aging-legend .dot{width:10px;height:10px;border-radius:2px}
+
+/* ═══════════════════════════════════════════════════════════════
+   ETL PIPELINE VISUALIZATION
+   ═══════════════════════════════════════════════════════════════ */
+.pipeline{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:10px 0}
+.pipeline-stage{flex:1;min-width:160px;padding:16px;background:var(--bg3);border:1px solid var(--border);position:relative;text-align:center}
+.pipeline-stage:first-child{border-radius:var(--radius-lg) 0 0 var(--radius-lg)}
+.pipeline-stage:last-child{border-radius:0 var(--radius-lg) var(--radius-lg) 0}
+.pipeline-stage.active{border-color:var(--accent);background:rgba(59,130,246,.08)}
+.pipeline-stage.complete{border-color:var(--green);background:rgba(16,185,129,.06)}
+.pipeline-stage .stage-icon{font-size:1.5rem;margin-bottom:6px}
+.pipeline-stage .stage-name{font-size:.78rem;font-weight:700;margin-bottom:4px}
+.pipeline-stage .stage-detail{font-size:.68rem;color:var(--text3)}
+.pipeline-stage .stage-count{font-size:1.1rem;font-weight:700;color:var(--accent3);margin-top:6px}
+.pipeline-arrow{display:flex;align-items:center;color:var(--text3);font-size:1.2rem;padding:0 2px}
+
+/* ═══════════════════════════════════════════════════════════════
+   ARCHITECTURE DIAGRAM
+   ═══════════════════════════════════════════════════════════════ */
+.arch-layer{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
+.arch-layer h3{font-size:.82rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.arch-sources{display:flex;gap:10px;flex-wrap:wrap}
+.arch-source{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:.78rem;flex:1;min-width:140px;text-align:center}
+.arch-source .src-name{font-weight:700;color:var(--accent3)}
+.arch-source .src-detail{color:var(--text3);font-size:.68rem;margin-top:2px}
+.arch-arrow-down{text-align:center;font-size:1.5rem;color:var(--accent);margin:8px 0}
+.arch-tables{display:flex;gap:6px;flex-wrap:wrap}
+.arch-table{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:.68rem;font-family:var(--mono);color:var(--cyan)}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════════════════════════ */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
+.tab{padding:8px 18px;cursor:pointer;font-size:.82rem;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:var(--transition);font-weight:500}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent3);border-bottom-color:var(--accent);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════════════════ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;max-width:800px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal h2{font-size:1.1rem;margin-bottom:16px}
+.modal-close{float:right;cursor:pointer;font-size:1.2rem;color:var(--text3);background:none;border:none}
+.modal-close:hover{color:var(--text)}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOADING / ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideIn{from{transform:translateX(-20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.animate-in{animation:fadeIn .4s ease}
+.animate-slide{animation:slideIn .3s ease}
+.loading{animation:pulse 1.5s infinite}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media(max-width:1200px){.grid-5{grid-template-columns:repeat(3,1fr)}.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sidebar{width:60px}.sidebar .nav-item span,.sidebar .nav-section,.sidebar-logo p,.sidebar-footer{display:none}.sidebar-logo h1{font-size:.7rem}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1><span>◆</span> Apex Manufacturing<br>Data Warehouse</h1>
+      <p>BI Platform v2.4</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Dashboard</div>
+      <div class="nav-item active" data-page="executive" onclick="showPage('executive')">
+        <span class="icon">📊</span><span>Executive Summary</span>
+      </div>
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item" data-page="sales" onclick="showPage('sales')">
+        <span class="icon">💰</span><span>Sales Performance</span>
+      </div>
+      <div class="nav-item" data-page="purchases" onclick="showPage('purchases')">
+        <span class="icon">📦</span><span>Purchase Tracking</span>
+      </div>
+      <div class="nav-item" data-page="inventory" onclick="showPage('inventory')">
+        <span class="icon">🏭</span><span>Cost & Inventory</span>
+      </div>
+      <div class="nav-item" data-page="ar-aging" onclick="showPage('ar-aging')">
+        <span class="icon">📥</span><span>AR Aging</span>
+      </div>
+      <div class="nav-item" data-page="ap-aging" onclick="showPage('ap-aging')">
+        <span class="icon">📤</span><span>AP Aging</span>
+      </div>
+      <div class="nav-section">System</div>
+      <div class="nav-item" data-page="architecture" onclick="showPage('architecture')">
+        <span class="icon">🏗️</span><span>Architecture</span>
+      </div>
+      <div class="nav-item" data-page="etl" onclick="showPage('etl')">
+        <span class="icon">⚙️</span><span>ETL Pipeline</span>
+      </div>
+      <div class="nav-item" data-page="intercompany" onclick="showPage('intercompany')">
+        <span class="icon">🔄</span><span>Intercompany</span>
+      </div>
+      <div class="nav-item" data-page="data-quality" onclick="showPage('data-quality')">
+        <span class="icon">✅</span><span>Data Quality</span>
+        <span class="badge" id="dq-badge">3</span>
+      </div>
+      <div class="nav-section">Reference</div>
+      <div class="nav-item" data-page="schema" onclick="showPage('schema')">
+        <span class="icon">🗄️</span><span>Schema Explorer</span>
+      </div>
+      <div class="nav-item" data-page="docs" onclick="showPage('docs')">
+        <span class="icon">📖</span><span>Documentation</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="status"><span class="dot"></span> ETL Last Run: Today 2:00 AM</div>
+      <div style="margin-top:4px">Batch: <span style="font-family:var(--mono);color:var(--accent3)" id="batch-id"></span></div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Executive Summary</div>
+      <div class="topbar-filters">
+        <div class="filter-group">
+          <label>Company</label>
+          <select class="filter-select" id="filter-company" onchange="applyFilters()">
+            <option value="ALL">All Entities</option>
+            <option value="APXP">Apex Precision LLC</option>
+            <option value="APXM">Apex Machining Inc</option>
+            <option value="INPC">Industrial Parts Corp</option>
+            <option value="HDCO">Heavy Duty Components</option>
+            <option value="CUST">Custom Fabrication Co</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Group</label>
+          <select class="filter-select" id="filter-group" onchange="applyFilters()">
+            <option value="ALL">All Groups</option>
+            <option value="Precision Parts">Precision Parts Div</option>
+            <option value="Industrial Comp">Industrial Comp Div</option>
+            <option value="Specialty Products">Specialty Products</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Period</label>
+          <select class="filter-select" id="filter-period" onchange="applyFilters()">
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="ALL">All Time</option>
+          </select>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="exportCSV()">⬇ Export</button>
+        <button class="btn btn-primary" onclick="runETL()">▶ Run ETL</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content" id="content">
+      <!-- Pages are rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ETL Modal -->
+<div class="modal-overlay" id="etl-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2>ETL Pipeline Execution</h2>
+    <div id="etl-log"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATA GENERATION ENGINE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// Seeded RNG for reproducibility
+class SeededRandom {
+  constructor(seed=42){this.seed=seed}
+  next(){this.seed=(this.seed*16807+0)%2147483647;return(this.seed-1)/2147483646}
+  int(a,b){return Math.floor(this.next()*(b-a+1))+a}
+  pick(arr){return arr[Math.floor(this.next()*arr.length)]}
+  chance(p){return this.next()<p}
+  float(a,b){return a+this.next()*(b-a)}
+}
+const R=new SeededRandom(42);
+
+// ═══════════════════════════════════════════════════════════════
+// MASTER DATA
+// ═══════════════════════════════════════════════════════════════
+const COMPANIES=[
+  {code:'APXP',name:'Apex Precision LLC',group:'Precision Parts',city:'Hartford',state:'CT',color:'#3b82f6'},
+  {code:'APXM',name:'Apex Machining Inc',group:'Precision Parts',city:'Bridgeport',state:'CT',color:'#8b5cf6'},
+  {code:'INPC',name:'Industrial Parts Corp',group:'Industrial Comp',city:'Detroit',state:'MI',color:'#10b981'},
+  {code:'HDCO',name:'Heavy Duty Components',group:'Industrial Comp',city:'Cleveland',state:'OH',color:'#f59e0b'},
+  {code:'CUST',name:'Custom Fabrication Co',group:'Specialty Products',city:'Tampa',state:'FL',color:'#ec4899'},
+];
+
+const GROUPS=[...new Set(COMPANIES.map(c=>c.group))];
+
+const CUSTOMER_NAMES=["Acme Manufacturing Corp","Blue Ridge Industries","Cascade Metal Works","Delta Precision Parts","Eagle Tool & Die","Frontier Fabrication","Greenfield Machining","Harborview Manufacturing","Iron Mountain Parts","Jupiter Industrial Supply","Keystone Components","Liberty Machine Works","Mountain View Tooling","Northshore Manufacturing","Oakdale Precision","Pacific Rim Industries","Quartz Valley Fabrication","Redwood Manufacturing","Silver Creek Tooling","Titan Industrial Corp","Union Steel Works","Valley Precision Parts","Westfield Manufacturing","Xenon Industries","Yellowstone Metal Works","Zenith Tool & Die","Atlas Components Inc","Bayside Manufacturing","Central Tool Works","Diamond Precision Corp","Eastern Machine Works","Falcon Industrial","Granite State Manufacturing","Highland Tooling Co","Interstate Components","Jackson Metal Fabricators","Kingdom Precision LLC","Lakeside Manufacturing","Metro Tool & Die","National Components Corp","Oceanview Manufacturing","Pioneer Tooling","Quality Metal Works","Riverside Industries","Summit Precision Corp","Tri-State Manufacturing","Universal Tool Works","Victory Components","Western Metal Fabricators","York Manufacturing Inc"];
+
+const VENDOR_NAMES=["Alpha Steel Supply","Beta Raw Materials Inc","Carbide Tooling Co","Diamond Abrasives LLC","Eastern Metals Distributors","Fastener World Inc","Global Bearing Supply","High Temp Alloys Corp","Industrial Lubricants Co","J&J Precision Castings","Kutting Edge Tools","Laser Cut Solutions","Midwest Steel Service","National Hardware Supply","Omega Fasteners Inc","Precision Grinding Co","Quality Plastics LLC","Raw Materials Direct","Superior Metal Supply","Titanium Source Inc","Ultra Precision Parts","Valve & Fitting Co","Welding Supply Corp","X-Ray Inspection Services","Yield Strength Materials","Zinc Coating Specialists"];
+
+const PRODUCT_LINES=["CNC Machined Parts","Sheet Metal Fabrication","Weldment Assemblies","Cast Iron Components","Aluminum Extrusions","Steel Stampings","Plastic Injection Molded","Rubber Seals & Gaskets","Bearings & Bushings","Fasteners & Hardware","Hydraulic Components","Pneumatic Parts"];
+
+const SALESPEOPLE=[{code:'SP001',name:'Mike Johnson'},{code:'SP002',name:'Sarah Williams'},{code:'SP003',name:'Tom Davis'},{code:'SP004',name:'Lisa Chen'},{code:'SP005',name:'Robert Brown'},{code:'SP006',name:'Emily Wilson'},{code:'SP007',name:'David Martinez'},{code:'SP008',name:'Jennifer Taylor'}];
+
+const BUYERS=[{code:'BY001',name:'Amanda Harris'},{code:'BY002',name:'Chris Anderson'},{code:'BY003',name:'Karen Thomas'},{code:'BY004',name:'Mark Jackson'},{code:'BY005',name:'Nancy White'}];
+
+const TERMS=[{code:'NET30',days:30},{code:'NET45',days:45},{code:'NET60',days:60},{code:'2/10NET30',days:30},{code:'COD',days:0}];
+
+const ITEM_CLASSES=['FINISHED','RAW','SEMI-FINISHED','PURCHASED','SUBASSEMBLY'];
+const UOMS=['EA','PC','LB','FT','IN','KG','SET','LOT'];
+
+function genItemNum(style,i){
+  if(style==='numeric') return String(10000+i);
+  if(style==='alpha'){const p=R.pick(['A','B','C','D','P','R','S','M']);return p+'-'+String(i+1).padStart(4,'0')}
+  return R.pick(['P-','RAW-','ASM-','STD-','SP-'])+String(i+1).padStart(3,'0');
+}
+
+function genDate(startYear,endYear){
+  const s=new Date(startYear,0,1).getTime(),e=new Date(endYear,11,31).getTime();
+  return new Date(s+R.next()*(e-s));
+}
+function fmtDate(d){return d.toISOString().split('T')[0]}
+function fmtMoney(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}
+function fmtMoneyK(n){if(n>=1e6)return '$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return '$'+(n/1e3).toFixed(0)+'K';return '$'+n.toFixed(0)}
+function fmtPct(n){return n.toFixed(1)+'%'}
+function fmtNum(n){return n.toLocaleString('en-US')}
+
+// ═══════════════════════════════════════════════════════════════
+// GENERATE ALL DATA
+// ═══════════════════════════════════════════════════════════════
+const DW={};
+
+function generateAllData(){
+  // Customers per company
+  DW.customers={};
+  COMPANIES.forEach(co=>{
+    const n=R.int(25,40);
+    const names=R.shuffle([...CUSTOMER_NAMES]).slice(0,n);
+    DW.customers[co.code]=names.map((name,i)=>({
+      id:co.code+'-C'+String(i+1).padStart(4,'0'),
+      name:name,
+      city:R.pick(['Hartford','New York','Detroit','Cleveland','Tampa','Chicago','Boston','Philadelphia','Dallas','Atlanta']),
+      state:R.pick(['CT','NY','MI','OH','FL','IL','MA','PA','TX','GA']),
+      creditLimit:R.float(10000,500000),
+      terms:R.pick(TERMS).code,
+      class:R.pick(['RETAIL','WHOLESALE','DISTRIBUTOR','OEM']),
+      salesperson:R.pick(SALESPEOPLE),
+      status:R.chance(0.95)?'ACTIVE':'INACTIVE',
+    }));
+  });
+
+  // Vendors per company
+  DW.vendors={};
+  COMPANIES.forEach(co=>{
+    const n=R.int(12,20);
+    const names=R.shuffle([...VENDOR_NAMES]).slice(0,n);
+    DW.vendors[co.code]=names.map((name,i)=>({
+      id:co.code+'-V'+String(i+1).padStart(4,'0'),
+      name:name,
+      city:R.pick(['Chicago','Houston','Cleveland','Detroit','Pittsburgh','Atlanta','Denver']),
+      state:R.pick(['IL','TX','OH','MI','PA','GA','CO']),
+      terms:R.pick(TERMS).code,
+      class:R.pick(['RAW_MATERIAL','TOOLING','SERVICES','SUPPLIES','MRO']),
+      status:R.chance(0.92)?'ACTIVE':'INACTIVE',
+    }));
+  });
+
+  // Products per company
+  DW.products={};
+  COMPANIES.forEach(co=>{
+    const n=R.int(60,100);
+    DW.products[co.code]=Array.from({length:n},(_,i)=>{
+      const pl=R.pick(PRODUCT_LINES);
+      const stdCost=R.float(0.5,2500);
+      return{
+        item:genItemNum(R.pick(['numeric','alpha','mixed']),i),
+        desc:R.pick(['Precision','Heavy Duty','Standard','Custom','Industrial'])+' '+R.pick(['Steel','Aluminum','Brass','Titanium','Plastic','Rubber'])+' '+R.pick(['Bushing','Bracket','Shaft','Housing','Plate','Rod','Pin','Seal','Gasket','Flange']),
+        class:R.pick(ITEM_CLASSES),
+        productLine:pl,
+        uom:R.pick(UOMS),
+        stdCost:stdCost,
+        lastCost:stdCost*R.float(0.9,1.15),
+        avgCost:stdCost*R.float(0.95,1.1),
+        listPrice:stdCost*R.float(1.15,2.5),
+        qtyOnHand:R.float(0,5000),
+        qtyOnOrder:R.float(0,1000),
+        qtyAllocated:R.float(0,500),
+        reorderPoint:R.float(50,500),
+        safetyStock:R.float(10,100),
+        leadTime:R.int(1,90),
+        vendor:R.pick(DW.vendors[co.code]).id,
+        warehouse:R.pick(['MAIN','WIP']),
+        status:R.chance(0.85)?'ACTIVE':R.chance(0.5)?'INACTIVE':'OBSOLETE',
+      };
+    });
+  });
+
+  // Sales Orders
+  DW.salesOrders=[];
+  COMPANIES.forEach(co=>{
+    const activeCust=DW.customers[co.code].filter(c=>c.status==='ACTIVE');
+    const activeProd=DW.products[co.code].filter(p=>p.status==='ACTIVE');
+    for(let i=0;i<R.int(350,550);i++){
+      const dt=genDate(2024,2025);
+      const cust=R.pick(activeCust);
+      const lines=R.int(1,4);
+      for(let l=1;l<=lines;l++){
+        const prod=R.pick(activeProd);
+        const qty=R.float(1,400);
+        const price=R.float(1,2000);
+        const status=R.chance(0.4)?'SHIPPED':R.chance(0.35)?'CLOSED':R.chance(0.15)?'OPEN':R.chance(0.5)?'BACKORDER':'CANCELLED';
+        const sp=R.pick(SALESPEOPLE);
+        DW.salesOrders.push({
+          company:co.code,
+          orderNum:'SO-'+co.code+'-'+String(dt.getFullYear()).slice(-2)+'-'+String(i+1).padStart(5,'0'),
+          date:dt,
+          customer:cust,
+          product:prod,
+          line:l,
+          qtyOrdered:qty,
+          qtyShipped:status==='OPEN'||status==='CANCELLED'?0:qty*R.float(0.5,1.0),
+          unitPrice:price,
+          extPrice:Math.round(qty*price*100)/100,
+          status:status,
+          salesperson:sp,
+          discount:R.chance(0.3)?R.float(0,15):0,
+          freight:R.float(0,500),
+        });
+      }
+    }
+  });
+
+  // Purchase Orders
+  DW.purchaseOrders=[];
+  COMPANIES.forEach(co=>{
+    const activeVend=DW.vendors[co.code].filter(v=>v.status==='ACTIVE');
+    const rawProd=DW.products[co.code].filter(p=>['RAW','PURCHASED','SEMI-FINISHED'].includes(p.class));
+    for(let i=0;i<R.int(200,350);i++){
+      const dt=genDate(2024,2025);
+      const vendor=R.pick(activeVend);
+      const lines=R.int(1,3);
+      for(let l=1;l<=lines;l++){
+        const prod=rawProd.length?R.pick(rawProd):R.pick(DW.products[co.code]);
+        const qty=R.float(10,3000);
+        const cost=R.float(0.1,400);
+        const status=R.chance(0.35)?'RECEIVED':R.chance(0.3)?'CLOSED':R.chance(0.2)?'OPEN':R.chance(0.5)?'PARTIAL':'CANCELLED';
+        DW.purchaseOrders.push({
+          company:co.code,
+          poNum:'PO-'+co.code+'-'+String(dt.getFullYear()).slice(-2)+'-'+String(i+1).padStart(5,'0'),
+          date:dt,
+          vendor:vendor,
+          product:prod,
+          line:l,
+          qtyOrdered:qty,
+          qtyReceived:status==='OPEN'||status==='CANCELLED'?0:qty*R.float(0.5,1.0),
+          unitCost:cost,
+          extCost:Math.round(qty*cost*100)/100,
+          status:status,
+          buyer:R.pick(BUYERS),
+          freight:R.float(0,200),
+          tax:R.float(0,150),
+        });
+      }
+    }
+  });
+
+  // AR Invoices
+  DW.arInvoices=[];
+  COMPANIES.forEach(co=>{
+    const activeCust=DW.customers[co.code].filter(c=>c.status==='ACTIVE');
+    for(let i=0;i<R.int(300,450);i++){
+      const dt=genDate(2024,2025);
+      const cust=R.pick(activeCust);
+      const terms=R.pick(TERMS);
+      const due=new Date(dt.getTime()+terms.days*86400000);
+      const amount=R.float(100,150000);
+      const status=R.chance(0.25)?'OPEN':R.chance(0.45)?'PAID':R.chance(0.15)?'PARTIAL':R.chance(0.5)?'OVERDUE':'WRITTEN_OFF';
+      let paid=0;
+      if(status==='PAID')paid=amount;
+      else if(status==='PARTIAL')paid=amount*R.float(0.1,0.9);
+      const balance=Math.round((amount-paid)*100)/100;
+      const daysPast=Math.max(0,Math.floor((new Date()-due)/86400000));
+      DW.arInvoices.push({
+        company:co.code,
+        invNum:'INV-'+co.code+'-'+String(i+1).padStart(6,'0'),
+        invDate:dt,
+        dueDate:due,
+        customer:cust,
+        amount:amount,
+        paid:paid,
+        balance:balance,
+        status:status,
+        terms:terms.code,
+        salesperson:R.pick(SALESPEOPLE),
+        daysPastDue:status==='PAID'?0:daysPast,
+        bucketCurrent:status==='PAID'?0:(daysPast<=0?balance:0),
+        bucket1_30:daysPast>=1&&daysPast<=30?balance:0,
+        bucket31_60:daysPast>=31&&daysPast<=60?balance:0,
+        bucket61_90:daysPast>=61&&daysPast<=90?balance:0,
+        bucketOver90:daysPast>90?balance:0,
+      });
+    }
+  });
+
+  // AP Invoices
+  DW.apInvoices=[];
+  COMPANIES.forEach(co=>{
+    const activeVend=DW.vendors[co.code].filter(v=>v.status==='ACTIVE');
+    for(let i=0;i<R.int(180,300);i++){
+      const dt=genDate(2024,2025);
+      const vendor=R.pick(activeVend);
+      const terms=R.pick(TERMS);
+      const due=new Date(dt.getTime()+terms.days*86400000);
+      const amount=R.float(50,200000);
+      const status=R.chance(0.2)?'OPEN':R.chance(0.5)?'PAID':R.chance(0.15)?'PARTIAL':'OVERDUE';
+      let paid=0;
+      if(status==='PAID')paid=amount;
+      else if(status==='PARTIAL')paid=amount*R.float(0.1,0.9);
+      const balance=Math.round((amount-paid)*100)/100;
+      const daysPast=Math.max(0,Math.floor((new Date()-due)/86400000));
+      DW.apInvoices.push({
+        company:co.code,
+        invNum:vendor.id+'-'+String(i+1).padStart(5,'0'),
+        invDate:dt,
+        dueDate:due,
+        vendor:vendor,
+        amount:amount,
+        paid:paid,
+        balance:balance,
+        status:status,
+        terms:terms.code,
+        buyer:R.pick(BUYERS),
+        daysPastDue:status==='PAID'?0:daysPast,
+        bucketCurrent:status==='PAID'?0:(daysPast<=0?balance:0),
+        bucket1_30:daysPast>=1&&daysPast<=30?balance:0,
+        bucket31_60:daysPast>=31&&daysPast<=60?balance:0,
+        bucket61_90:daysPast>=61&&daysPast<=90?balance:0,
+        bucketOver90:daysPast>90?balance:0,
+      });
+    }
+  });
+
+  // Intercompany Transactions
+  DW.intercompany=[];
+  for(let i=0;i<R.int(30,60);i++){
+    const seller=R.pick(COMPANIES);
+    let buyer=R.pick(COMPANIES);
+    while(buyer.code===seller.code)buyer=R.pick(COMPANIES);
+    const dt=genDate(2024,2025);
+    const prod=R.pick(DW.products[seller.code]);
+    const qty=R.float(10,500);
+    const sellPrice=R.float(10,500);
+    const buyCost=sellPrice*R.float(0.85,0.98);
+    DW.intercompany.push({
+      id:'ICT-'+seller.code+'-'+buyer.code+'-'+(i+1),
+      date:dt,
+      seller:seller,
+      buyer:buyer,
+      product:prod,
+      qty:qty,
+      sellPrice:sellPrice,
+      buyCost:buyCost,
+      sellRevenue:Math.round(qty*sellPrice*100)/100,
+      buyExpense:Math.round(qty*buyCost*100)/100,
+      margin:Math.round(qty*(sellPrice-buyCost)*100)/100,
+      marginPct:sellPrice>0?((sellPrice-buyCost)/sellPrice*100):0,
+      status:R.pick(['MATCHED','UNMATCHED','PENDING','RECONCILED']),
+    });
+  }
+
+  // ETL Log data
+  DW.etlLog=[
+    {id:1,job:'EXTRACT_APXP',layer:'EXTRACT',table:'sales_orders',status:'SUCCESS',rows:1847,time:'02:00:12',duration:'3.2s'},
+    {id:2,job:'EXTRACT_APXM',layer:'EXTRACT',table:'sales_orders',status:'SUCCESS',rows:2103,time:'02:00:15',duration:'4.1s'},
+    {id:3,job:'EXTRACT_INPC',layer:'EXTRACT',table:'sales_orders',status:'SUCCESS',rows:1654,time:'02:00:18',duration:'2.8s'},
+    {id:4,job:'EXTRACT_HDCO',layer:'EXTRACT',table:'purchase_orders',status:'SUCCESS',rows:987,time:'02:00:22',duration:'1.9s'},
+    {id:5,job:'EXTRACT_CUST',layer:'EXTRACT',table:'ar_invoices',status:'WARNING',rows:1243,time:'02:00:25',duration:'2.1s',note:'12 rows with null dates'},
+    {id:6,job:'CLEANSE_ALL',layer:'CLEANSE',table:'cln.customer_master',status:'SUCCESS',rows:178,time:'02:01:30',duration:'8.4s'},
+    {id:7,job:'CLEANSE_ALL',layer:'CLEANSE',table:'cln.sales_orders',status:'SUCCESS',rows:7487,time:'02:01:45',duration:'12.3s'},
+    {id:8,job:'CLEANSE_ALL',layer:'CLEANSE',table:'cln.purchase_orders',status:'SUCCESS',rows:4532,time:'02:02:01',duration:'7.8s'},
+    {id:9,job:'LOAD_DIM',layer:'LOAD',table:'dw.dim_customer',status:'SUCCESS',rows:178,time:'02:03:10',duration:'2.1s'},
+    {id:10,job:'LOAD_FACT',layer:'LOAD',table:'dw.fact_sales_orders',status:'SUCCESS',rows:7487,time:'02:03:45',duration:'5.6s'},
+    {id:11,job:'LOAD_FACT',layer:'LOAD',table:'dw.fact_ar_aging',status:'SUCCESS',rows:2341,time:'02:04:02',duration:'3.2s'},
+    {id:12,job:'POST_PROCESS',layer:'POST',table:'intercompany_detection',status:'SUCCESS',rows:47,time:'02:04:30',duration:'1.8s'},
+  ];
+
+  // Data Quality Issues
+  DW.dqIssues=[
+    {severity:'WARNING',source:'APXM',table:'sales_orders',rule:'NULL_DATES',affected:12,detail:'Order dates missing for 12 records — defaulted to extraction date'},
+    {severity:'WARNING',source:'INPC',table:'purchase_orders',rule:'DUPLICATE_PO',affected:8,detail:'Duplicate PO lines detected and deduplicated'},
+    {severity:'WARNING',source:'HDCO',table:'customers',rule:'INCONSISTENT_STATE',affected:5,detail:'Full state names converted to abbreviations'},
+    {severity:'INFO',source:'CUST',table:'ar_invoices',rule:'ZERO_BALANCE_RECALC',affected:23,detail:'Balance recalculated from invoice minus paid amount'},
+    {severity:'INFO',source:'ALL',table:'all',rule:'NAME_STANDARDIZATION',affected:142,detail:'Customer/vendor names standardized to title case'},
+    {severity:'INFO',source:'ALL',table:'all',rule:'EXTRA_SPACES',affected:67,detail:'Extra whitespace removed from text fields'},
+  ];
+
+  // Schema info
+  DW.schemas={
+    stg:{label:'Staging',color:'var(--yellow)',tables:['customers','vendors','materials','sales_orders','purchase_orders','ar_invoices','ap_invoices','gl_transactions'],desc:'Raw data from source systems, as-is'},
+    cln:{label:'Cleansed',color:'var(--cyan)',tables:['customer_master','vendor_master','product_master','sales_orders','purchase_orders','ar_invoices','ap_invoices','material_costs','intercompany_transactions'],desc:'Standardized, deduplicated, type-cast data'},
+    dw:{label:'Data Warehouse',color:'var(--accent3)',tables:['dim_company','dim_customer','dim_vendor','dim_product','dim_date','dim_warehouse','dim_gl_account','fact_sales_orders','fact_purchase_orders','fact_material_costs','fact_ar_aging','fact_ap_aging','fact_intercompany','fact_gl_transactions'],desc:'Star schema with surrogate keys, SCD Type 2'},
+    rpt:{label:'Reporting',color:'var(--green)',tables:['vw_sales_performance','vw_purchase_tracking','vw_cost_analysis','vw_ar_aging_detail','vw_ap_aging_detail','vw_executive_summary','vw_entity_comparison','vw_intercompany_reconciliation'],desc:'Pre-optimized views for BI consumption'},
+    etl:{label:'ETL Control',color:'var(--purple)',tables:['source_systems','job_log','data_quality_log','entity_id_mapping'],desc:'Metadata, logging, and cross-entity mapping'},
+  };
+}
+
+generateAllData();
+
+// ═══════════════════════════════════════════════════════════════
+// FILTER ENGINE
+// ═══════════════════════════════════════════════════════════════
+let currentFilter={company:'ALL',group:'ALL',period:'2025'};
+
+function applyFilters(){
+  currentFilter.company=document.getElementById('filter-company').value;
+  currentFilter.group=document.getElementById('filter-group').value;
+  currentFilter.period=document.getElementById('filter-period').value;
+  renderCurrentPage();
+}
+
+function filterCompanies(){
+  let c=COMPANIES;
+  if(currentFilter.company!=='ALL')c=c.filter(x=>x.code===currentFilter.company);
+  if(currentFilter.group!=='ALL')c=c.filter(x=>x.group===currentFilter.group);
+  return c;
+}
+function filterByCompany(arr,key='company'){
+  let r=arr;
+  if(currentFilter.company!=='ALL')r=r.filter(x=>x[key]===currentFilter.company);
+  else if(currentFilter.group!=='ALL'){
+    const codes=filterCompanies().map(c=>c.code);
+    r=r.filter(x=>codes.includes(x[key]));
+  }
+  if(currentFilter.period!=='ALL'){
+    const yr=parseInt(currentFilter.period);
+    r=r.filter(x=>x.date&&x.date.getFullYear()===yr);
+  }
+  return r;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHART ENGINE (Canvas-based)
+// ═══════════════════════════════════════════════════════════════
+const COLORS=['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316','#ef4444','#14b8a6','#a855f7'];
+
+function drawBarChart(canvasId,labels,datasets,opts={}){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.clientWidth;
+  const H=opts.height||280;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(2,2);
+
+  const pad={t:30,r:20,b:40,l:60};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+
+  // Find max
+  let maxVal=0;
+  datasets.forEach(ds=>ds.data.forEach(v=>{if(v>maxVal)maxVal=v}));
+  if(maxVal===0)maxVal=1;
+  maxVal=Math.ceil(maxVal*1.15);
+
+  // Grid lines
+  ctx.strokeStyle='#1e293b';ctx.lineWidth=1;
+  const gridLines=5;
+  for(let i=0;i<=gridLines;i++){
+    const y=pad.t+cH-(cH*i/gridLines);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='11px system-ui';ctx.textAlign='right';
+    const val=maxVal*i/gridLines;
+    ctx.fillText(opts.fmtMoney?fmtMoneyK(val):fmtNum(Math.round(val)),pad.l-8,y+4);
+  }
+
+  // Bars
+  const groupCount=labels.length;
+  const dsCount=datasets.length;
+  const groupW=cW/groupCount;
+  const barW=Math.min(groupW*0.7/dsCount,40);
+  const gap=(groupW-barW*dsCount)/2;
+
+  labels.forEach((label,i)=>{
+    const gx=pad.l+i*groupW;
+    datasets.forEach((ds,j)=>{
+      const val=ds.data[i]||0;
+      const barH=(val/maxVal)*cH;
+      const x=gx+gap+j*barW;
+      const y=pad.t+cH-barH;
+
+      ctx.fillStyle=ds.color||COLORS[j];
+      // Rounded top
+      const r=Math.min(3,barW/2);
+      ctx.beginPath();
+      ctx.moveTo(x,pad.t+cH);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+      ctx.lineTo(x+barW-r,y);ctx.quadraticCurveTo(x+barW,y,x+barW,y+r);
+      ctx.lineTo(x+barW,pad.t+cH);ctx.closePath();ctx.fill();
+
+      // Label
+      if(dsCount===1||j===0){
+        ctx.fillStyle='#94a3b8';ctx.font='10px system-ui';ctx.textAlign='center';
+        ctx.save();ctx.translate(gx+groupW/2,pad.t+cH+14);
+        if(labels.length>8){ctx.rotate(-0.5);ctx.textAlign='right'}
+        ctx.fillText(label,0,0);ctx.restore();
+      }
+    });
+  });
+
+  // Legend
+  if(datasets.length>1){
+    let lx=pad.l;
+    datasets.forEach((ds,j)=>{
+      ctx.fillStyle=ds.color||COLORS[j];
+      ctx.fillRect(lx,6,12,12);
+      ctx.fillStyle='#94a3b8';ctx.font='11px system-ui';ctx.textAlign='left';
+      ctx.fillText(ds.label,lx+16,16);
+      lx+=ctx.measureText(ds.label).width+36;
+    });
+  }
+}
+
+function drawLineChart(canvasId,labels,datasets,opts={}){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.clientWidth;
+  const H=opts.height||280;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(2,2);
+
+  const pad={t:30,r:20,b:40,l:60};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+
+  let maxVal=0,minVal=Infinity;
+  datasets.forEach(ds=>ds.data.forEach(v=>{if(v>maxVal)maxVal=v;if(v<minVal)minVal=v}));
+  if(minVal>0)minVal=0;
+  maxVal=Math.ceil(maxVal*1.15);
+
+  // Grid
+  ctx.strokeStyle='#1e293b';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y=pad.t+cH-(cH*i/5);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='11px system-ui';ctx.textAlign='right';
+    ctx.fillText(fmtMoneyK(minVal+(maxVal-minVal)*i/5),pad.l-8,y+4);
+  }
+
+  // X labels
+  labels.forEach((label,i)=>{
+    const x=pad.l+(cW*i/(labels.length-1));
+    ctx.fillStyle='#94a3b8';ctx.font='10px system-ui';ctx.textAlign='center';
+    if(labels.length<=12||i%Math.ceil(labels.length/12)===0)ctx.fillText(label,x,pad.t+cH+16);
+  });
+
+  // Lines
+  datasets.forEach((ds,j)=>{
+    ctx.strokeStyle=ds.color||COLORS[j];
+    ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();
+    ds.data.forEach((v,i)=>{
+      const x=pad.l+(cW*i/(labels.length-1));
+      const y=pad.t+cH-((v-minVal)/(maxVal-minVal))*cH;
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    // Area fill
+    ctx.globalAlpha=0.08;
+    ctx.fillStyle=ds.color||COLORS[j];
+    ctx.lineTo(pad.l+cW,pad.t+cH);ctx.lineTo(pad.l,pad.t+cH);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=1;
+
+    // Dots
+    ds.data.forEach((v,i)=>{
+      const x=pad.l+(cW*i/(labels.length-1));
+      const y=pad.t+cH-((v-minVal)/(maxVal-minVal))*cH;
+      ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=ds.color||COLORS[j];ctx.fill();
+    });
+  });
+
+  if(datasets.length>1){
+    let lx=pad.l;
+    datasets.forEach((ds,j)=>{
+      ctx.fillStyle=ds.color||COLORS[j];ctx.fillRect(lx,6,12,12);
+      ctx.fillStyle='#94a3b8';ctx.font='11px system-ui';ctx.textAlign='left';
+      ctx.fillText(ds.label,lx+16,16);lx+=ctx.measureText(ds.label).width+36;
+    });
+  }
+}
+
+function drawDonutChart(canvasId,labels,data,colors,opts={}){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const S=opts.size||220;
+  canvas.width=S*2;canvas.height=S*2;canvas.style.width=S+'px';canvas.style.height=S+'px';
+  ctx.scale(2,2);
+
+  const cx=S/2,cy=S/2,outerR=S/2-10,innerR=outerR*0.6;
+  const total=data.reduce((a,b)=>a+b,0)||1;
+  let angle=-Math.PI/2;
+
+  data.forEach((val,i)=>{
+    const slice=(val/total)*Math.PI*2;
+    ctx.beginPath();ctx.arc(cx,cy,outerR,angle,angle+slice);
+    ctx.arc(cx,cy,innerR,angle+slice,angle,true);ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];ctx.fill();
+    angle+=slice;
+  });
+
+  // Center text
+  ctx.fillStyle='#e2e8f0';ctx.font='bold 16px system-ui';ctx.textAlign='center';
+  ctx.fillText(opts.centerText||fmtMoneyK(total),cx,cy-2);
+  ctx.fillStyle='#64748b';ctx.font='11px system-ui';
+  ctx.fillText(opts.centerLabel||'Total',cx,cy+16);
+}
+
+function drawSparkline(canvasId,data,color){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.clientWidth,H=30;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(2,2);
+
+  const max=Math.max(...data),min=Math.min(...data);
+  const range=max-min||1;
+  ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.lineJoin='round';
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x=(W*i/(data.length-1));
+    const y=H-((v-min)/range)*(H-4)-2;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.globalAlpha=0.1;ctx.fillStyle=color;ctx.fill();ctx.globalAlpha=1;
+}
+
+function drawHorizontalBar(canvasId,labels,values,color,opts={}){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.parentElement.clientWidth;
+  const barH=22,gap=4;
+  const H=labels.length*(barH+gap)+20;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(2,2);
+
+  const labelW=opts.labelWidth||150;
+  const maxVal=Math.max(...values)||1;
+  const cW=W-labelW-60;
+
+  labels.forEach((label,i)=>{
+    const y=10+i*(barH+gap);
+    // Label
+    ctx.fillStyle='#94a3b8';ctx.font='11px system-ui';ctx.textAlign='right';
+    const truncLabel=label.length>20?label.slice(0,20)+'…':label;
+    ctx.fillText(truncLabel,labelW-8,y+barH/2+4);
+    // Bar
+    const bw=(values[i]/maxVal)*cW;
+    ctx.fillStyle=color||COLORS[i%COLORS.length];
+    ctx.beginPath();
+    ctx.roundRect(labelW,y,Math.max(bw,2),barH,3);
+    ctx.fill();
+    // Value
+    ctx.fillStyle='#e2e8f0';ctx.font='bold 10px system-ui';ctx.textAlign='left';
+    ctx.fillText(fmtMoneyK(values[i]),labelW+bw+6,y+barH/2+4);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE RENDERERS
+// ═══════════════════════════════════════════════════════════════
+let currentPage='executive';
+
+function showPage(page){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  const titles={executive:'Executive Summary',sales:'Sales Performance',purchases:'Purchase Tracking',inventory:'Cost & Inventory Analysis','ar-aging':'AR Aging Analysis','ap-aging':'AP Aging Analysis',architecture:'System Architecture',etl:'ETL Pipeline Monitor',intercompany:'Intercompany Transactions','data-quality':'Data Quality Dashboard',schema:'Schema Explorer',docs:'Documentation'};
+  document.getElementById('page-title').textContent=titles[page]||page;
+  renderCurrentPage();
+}
+
+function renderCurrentPage(){
+  const c=document.getElementById('content');
+  c.scrollTop=0;
+  const renderers={executive:renderExecutive,sales:renderSales,purchases:renderPurchases,inventory:renderInventory,'ar-aging':renderARAging,'ap-aging':renderAPAging,architecture:renderArchitecture,etl:renderETL,intercompany:renderIntercompany,'data-quality':renderDataQuality,schema:renderSchema,docs:renderDocs};
+  (renderers[currentPage]||renderExecutive)();
+  // Animate in
+  c.querySelectorAll('.card,.kpi-card,.arch-layer').forEach((el,i)=>{
+    el.style.opacity='0';el.style.transform='translateY(8px)';
+    setTimeout(()=>{el.style.transition='all .35s ease';el.style.opacity='1';el.style.transform='translateY(0)'},i*40);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXECUTIVE SUMMARY
+// ═══════════════════════════════════════════════════════════════
+function renderExecutive(){
+  const sales=filterByCompany(DW.salesOrders);
+  const purchases=filterByCompany(DW.purchaseOrders);
+  const ar=filterByCompany(DW.arInvoices);
+  const ap=filterByCompany(DW.apInvoices);
+  const companies=filterCompanies();
+
+  const totalRevenue=sales.reduce((a,s)=>a+s.extPrice,0);
+  const totalSpend=purchases.reduce((a,p)=>a+p.extCost,0);
+  const totalAR=ar.reduce((a,x)=>a+x.balance,0);
+  const totalAP=ap.reduce((a,x)=>a+x.balance,0);
+  const inventoryVal=companies.reduce((a,co)=>{
+    return a+DW.products[co.code].reduce((b,p)=>b+p.qtyOnHand*p.stdCost,0);
+  },0);
+  const grossMargin=totalRevenue>0?((totalRevenue-totalSpend)/totalRevenue*100):0;
+  const orderCount=new Set(sales.map(s=>s.orderNum)).size;
+
+  // Monthly revenue trend
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthlyRev=months.map((_,mi)=>{
+    return sales.filter(s=>s.date.getMonth()===mi).reduce((a,s)=>a+s.extPrice,0);
+  });
+
+  // Revenue by company
+  const revByCompany=companies.map(co=>({
+    label:co.code,
+    value:sales.filter(s=>s.company===co.code).reduce((a,s)=>a+s.extPrice,0)
+  }));
+
+  // Top customers
+  const custTotals={};
+  sales.forEach(s=>{custTotals[s.customer.name]=(custTotals[s.customer.name]||0)+s.extPrice});
+  const topCusts=Object.entries(custTotals).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-5 mb-20">
+      <div class="kpi-card blue"><div class="kpi-label">Total Revenue</div><div class="kpi-value">${fmtMoneyK(totalRevenue)}</div><div class="kpi-change up">▲ 8.3% vs prior</div><div class="kpi-sparkline"><canvas id="spark-rev"></canvas></div></div>
+      <div class="kpi-card green"><div class="kpi-label">Gross Margin</div><div class="kpi-value">${fmtPct(grossMargin)}</div><div class="kpi-change ${grossMargin>40?'up':'down'}">${grossMargin>40?'▲':'▼'} ${Math.abs(grossMargin-42.1).toFixed(1)}pp vs target</div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">Total Orders</div><div class="kpi-value">${fmtNum(orderCount)}</div><div class="kpi-change up">▲ 12.1% vs prior</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">AR Outstanding</div><div class="kpi-value">${fmtMoneyK(totalAR)}</div><div class="kpi-change down">▲ 5.2% vs last month</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Inventory Value</div><div class="kpi-value">${fmtMoneyK(inventoryVal)}</div><div class="kpi-change up">▼ 2.1% vs last month</div></div>
+    </div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Revenue Trend — Monthly</div></div><div class="chart-container"><canvas id="chart-rev-trend"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Revenue by Entity</div></div><div class="chart-container"><canvas id="chart-rev-company"></canvas></div></div>
+    </div>
+    <div class="grid-3 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Top 10 Customers</div><div class="card-subtitle">By revenue</div></div><div class="chart-container"><canvas id="chart-top-cust"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Order Status Distribution</div></div><div class="chart-container" style="display:flex;justify-content:center"><canvas id="chart-order-status"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Entity Comparison</div><div class="card-subtitle">Key metrics</div></div>
+        <table class="data-table"><thead><tr><th>Entity</th><th class="num">Revenue</th><th class="num">Orders</th><th class="num">AR</th><th class="num">AP</th></tr></thead><tbody>
+        ${companies.map(co=>{
+          const cr=sales.filter(s=>s.company===co.code).reduce((a,s)=>a+s.extPrice,0);
+          const co2=new Set(sales.filter(s=>s.company===co.code).map(s=>s.orderNum)).size;
+          const car=ar.filter(x=>x.company===co.code).reduce((a,x)=>a+x.balance,0);
+          const cap=ap.filter(x=>x.company===co.code).reduce((a,x)=>a+x.balance,0);
+          return `<tr><td><span style="color:${co.color}">●</span> ${co.code}</td><td class="num currency">${fmtMoneyK(cr)}</td><td class="num">${fmtNum(co2)}</td><td class="num">${fmtMoneyK(car)}</td><td class="num">${fmtMoneyK(cap)}</td></tr>`;
+        }).join('')}
+        </tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Purchase Spend vs Revenue — Monthly</div></div>
+      <div class="chart-container"><canvas id="chart-rev-vs-spend"></canvas></div>
+    </div>
+  `;
+
+  // Draw charts
+  setTimeout(()=>{
+    drawSparkline('spark-rev',monthlyRev,'#3b82f6');
+    drawLineChart('chart-rev-trend',months,[{label:'Revenue',data:monthlyRev,color:'#3b82f6'}],{fmtMoney:true});
+    drawBarChart('chart-rev-company',revByCompany.map(x=>x.label),[{data:revByCompany.map(x=>x.value),color:'#3b82f6'}],{fmtMoney:true});
+    drawHorizontalBar('chart-top-cust',topCusts.map(x=>x[0].length>18?x[0].slice(0,18)+'…':x[0]),topCusts.map(x=>x[1]),'#3b82f6');
+
+    // Order status donut
+    const statuses={};sales.forEach(s=>{statuses[s.status]=(statuses[s.status]||0)+1});
+    const stLabels=Object.keys(statuses),stData=Object.values(statuses);
+    const stColors=['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6'];
+    drawDonutChart('chart-order-status',stLabels,stData,stColors,{centerText:fmtNum(sales.length),centerLabel:'Lines'});
+
+    // Rev vs Spend
+    const monthlySpend=months.map((_,mi)=>purchases.filter(p=>p.date.getMonth()===mi).reduce((a,p)=>a+p.extCost,0));
+    drawLineChart('chart-rev-vs-spend',months,[
+      {label:'Revenue',data:monthlyRev,color:'#3b82f6'},
+      {label:'Spend',data:monthlySpend,color:'#f59e0b'},
+    ],{fmtMoney:true});
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SALES PERFORMANCE
+// ═══════════════════════════════════════════════════════════════
+function renderSales(){
+  const sales=filterByCompany(DW.salesOrders);
+  const companies=filterCompanies();
+  const totalRev=sales.reduce((a,s)=>a+s.extPrice,0);
+  const orderCount=new Set(sales.map(s=>s.orderNum)).size;
+  const avgOrder=totalRev/(orderCount||1);
+  const totalShipped=sales.reduce((a,s)=>a+s.qtyShipped,0);
+  const totalOrdered=sales.reduce((a,s)=>a+s.qtyOrdered,0);
+  const fillRate=totalOrdered>0?(totalShipped/totalOrdered*100):0;
+
+  // By product line
+  const plTotals={};
+  sales.forEach(s=>{const pl=s.product.productLine;plTotals[pl]=(plTotals[pl]||0)+s.extPrice});
+  const plSorted=Object.entries(plTotals).sort((a,b)=>b[1]-a[1]);
+
+  // By salesperson
+  const spTotals={};
+  sales.forEach(s=>{const sp=s.salesperson.name;spTotals[sp]=(spTotals[sp]||0)+s.extPrice});
+  const spSorted=Object.entries(spTotals).sort((a,b)=>b[1]-a[1]);
+
+  // Monthly by company
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const datasets=companies.map(co=>({
+    label:co.code,
+    color:co.color,
+    data:months.map((_,mi)=>sales.filter(s=>s.company===co.code&&s.date.getMonth()===mi).reduce((a,s)=>a+s.extPrice,0))
+  }));
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-4 mb-20">
+      <div class="kpi-card blue"><div class="kpi-label">Total Revenue</div><div class="kpi-value">${fmtMoneyK(totalRev)}</div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">Order Lines</div><div class="kpi-value">${fmtNum(sales.length)}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Fill Rate</div><div class="kpi-value">${fmtPct(fillRate)}</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Avg Order Value</div><div class="kpi-value">${fmtMoneyK(avgOrder)}</div></div>
+    </div>
+    <div class="card mb-20"><div class="card-header"><div class="card-title">Revenue by Company — Monthly Trend</div></div><div class="chart-container"><canvas id="chart-sales-trend"></canvas></div></div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Revenue by Product Line</div></div><div class="chart-container"><canvas id="chart-sales-pl"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Sales by Salesperson</div></div><div class="chart-container"><canvas id="chart-sales-sp"></canvas></div></div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Recent Sales Orders</div><div class="card-subtitle">Showing latest 30 lines</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>Company</th><th>Order #</th><th>Date</th><th>Customer</th><th>Product</th><th>Status</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Extended</th></tr></thead><tbody>
+      ${sales.sort((a,b)=>b.date-a.date).slice(0,30).map(s=>`<tr>
+        <td><span style="color:${COMPANIES.find(x=>x.code===s.company).color}">●</span> ${s.company}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${s.orderNum}</td>
+        <td>${fmtDate(s.date)}</td>
+        <td>${s.customer.name.length>22?s.customer.name.slice(0,22)+'…':s.customer.name}</td>
+        <td>${s.product.desc.length>25?s.product.desc.slice(0,25)+'…':s.product.desc}</td>
+        <td><span class="badge ${s.status==='SHIPPED'||s.status==='CLOSED'?'badge-green':s.status==='OPEN'?'badge-blue':s.status==='BACKORDER'?'badge-yellow':'badge-red'}">${s.status}</span></td>
+        <td class="num">${fmtNum(Math.round(s.qtyOrdered))}</td>
+        <td class="num">${fmtMoneyK(s.unitPrice)}</td>
+        <td class="num currency">${fmtMoneyK(s.extPrice)}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  `;
+
+  setTimeout(()=>{
+    drawLineChart('chart-sales-trend',months,datasets,{fmtMoney:true,height:300});
+    drawBarChart('chart-sales-pl',plSorted.slice(0,8).map(x=>x[0].length>15?x[0].slice(0,15)+'…':x[0]),[{data:plSorted.slice(0,8).map(x=>x[1]),color:'#3b82f6'}],{fmtMoney:true});
+    drawHorizontalBar('chart-sales-sp',spSorted.map(x=>x[0]),spSorted.map(x=>x[1]),'#8b5cf6');
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PURCHASE TRACKING
+// ═══════════════════════════════════════════════════════════════
+function renderPurchases(){
+  const pos=filterByCompany(DW.purchaseOrders);
+  const companies=filterCompanies();
+  const totalSpend=pos.reduce((a,p)=>a+p.extCost,0);
+  const poCount=new Set(pos.map(p=>p.poNum)).size;
+  const totalOrd=pos.reduce((a,p)=>a+p.qtyOrdered,0);
+  const totalRecv=pos.reduce((a,p)=>a+p.qtyReceived,0);
+  const recvRate=totalOrd>0?(totalRecv/totalOrd*100):0;
+
+  const vendorTotals={};
+  pos.forEach(p=>{vendorTotals[p.vendor.name]=(vendorTotals[p.vendor.name]||0)+p.extCost});
+  const vendorSorted=Object.entries(vendorTotals).sort((a,b)=>b[1]-a[1]).slice(0,12);
+
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthlySpend=months.map((_,mi)=>pos.filter(p=>p.date.getMonth()===mi).reduce((a,p)=>a+p.extCost,0));
+
+  const statuses={};pos.forEach(p=>{statuses[p.status]=(statuses[p.status]||0)+1});
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-4 mb-20">
+      <div class="kpi-card yellow"><div class="kpi-label">Total Spend</div><div class="kpi-value">${fmtMoneyK(totalSpend)}</div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">PO Lines</div><div class="kpi-value">${fmtNum(pos.length)}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Receipt Rate</div><div class="kpi-value">${fmtPct(recvRate)}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Unique Vendors</div><div class="kpi-value">${new Set(pos.map(p=>p.vendor.id)).size}</div></div>
+    </div>
+    <div class="card mb-20"><div class="card-header"><div class="card-title">Purchase Spend — Monthly</div></div><div class="chart-container"><canvas id="chart-po-trend"></canvas></div></div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Top Vendors by Spend</div></div><div class="chart-container"><canvas id="chart-po-vendors"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">PO Status</div></div><div class="chart-container" style="display:flex;justify-content:center"><canvas id="chart-po-status"></canvas></div></div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Recent Purchase Orders</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>Company</th><th>PO #</th><th>Date</th><th>Vendor</th><th>Product</th><th>Status</th><th class="num">Qty Ord</th><th class="num">Qty Recv</th><th class="num">Cost</th></tr></thead><tbody>
+      ${pos.sort((a,b)=>b.date-a.date).slice(0,30).map(p=>`<tr>
+        <td><span style="color:${COMPANIES.find(x=>x.code===p.company).color}">●</span> ${p.company}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${p.poNum}</td>
+        <td>${fmtDate(p.date)}</td>
+        <td>${p.vendor.name.length>22?p.vendor.name.slice(0,22)+'…':p.vendor.name}</td>
+        <td>${p.product.desc.length>25?p.product.desc.slice(0,25)+'…':p.product.desc}</td>
+        <td><span class="badge ${p.status==='RECEIVED'||p.status==='CLOSED'?'badge-green':p.status==='OPEN'?'badge-blue':p.status==='PARTIAL'?'badge-yellow':'badge-red'}">${p.status}</span></td>
+        <td class="num">${fmtNum(Math.round(p.qtyOrdered))}</td>
+        <td class="num">${fmtNum(Math.round(p.qtyReceived))}</td>
+        <td class="num currency">${fmtMoneyK(p.extCost)}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  `;
+  setTimeout(()=>{
+    drawLineChart('chart-po-trend',months,[{label:'Spend',data:monthlySpend,color:'#f59e0b'}],{fmtMoney:true});
+    drawHorizontalBar('chart-po-vendors',vendorSorted.map(x=>x[0].length>20?x[0].slice(0,20)+'…':x[0]),vendorSorted.map(x=>x[1]),'#f59e0b');
+    const stLabels=Object.keys(statuses),stData=Object.values(statuses);
+    drawDonutChart('chart-po-status',stLabels,stData,['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6'],{centerText:fmtNum(pos.length),centerLabel:'Lines'});
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INVENTORY & COST
+// ═══════════════════════════════════════════════════════════════
+function renderInventory(){
+  const companies=filterCompanies();
+  const allProducts=[];
+  companies.forEach(co=>DW.products[co.code].forEach(p=>allProducts.push({...p,company:co.code})));
+
+  const totalInv=allProducts.reduce((a,p)=>a+p.qtyOnHand*p.stdCost,0);
+  const itemCount=allProducts.length;
+  const belowReorder=allProducts.filter(p=>p.qtyOnHand<=p.reorderPoint).length;
+  const belowSafety=allProducts.filter(p=>p.qtyOnHand<=p.safetyStock).length;
+
+  // By product line
+  const plVal={};
+  allProducts.forEach(p=>{plVal[p.productLine]=(plVal[p.productLine]||0)+p.qtyOnHand*p.stdCost});
+  const plSorted=Object.entries(plVal).sort((a,b)=>b[1]-a[1]);
+
+  // By company
+  const coVal=companies.map(co=>({
+    code:co.code,color:co.color,
+    value:DW.products[co.code].reduce((a,p)=>a+p.qtyOnHand*p.stdCost,0)
+  }));
+
+  // Margin distribution
+  const margins=allProducts.filter(p=>p.listPrice>0&&p.stdCost>0).map(p=>((p.listPrice-p.stdCost)/p.listPrice*100));
+  const marginBuckets={'<15%':0,'15-25%':0,'25-35%':0,'35-50%':0,'50%+':0};
+  margins.forEach(m=>{
+    if(m<15)marginBuckets['<15%']++;
+    else if(m<25)marginBuckets['15-25%']++;
+    else if(m<35)marginBuckets['25-35%']++;
+    else if(m<50)marginBuckets['35-50%']++;
+    else marginBuckets['50%+']++;
+  });
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-5 mb-20">
+      <div class="kpi-card blue"><div class="kpi-label">Total Inventory Value</div><div class="kpi-value">${fmtMoneyK(totalInv)}</div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">Unique Items</div><div class="kpi-value">${fmtNum(itemCount)}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Below Reorder</div><div class="kpi-value">${fmtNum(belowReorder)}</div><div class="kpi-change down">${(belowReorder/itemCount*100).toFixed(1)}% of items</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Below Safety Stock</div><div class="kpi-value">${fmtNum(belowSafety)}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Avg Std Cost</div><div class="kpi-value">${fmtMoneyK(allProducts.reduce((a,p)=>a+p.stdCost,0)/itemCount)}</div></div>
+    </div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Inventory Value by Product Line</div></div><div class="chart-container"><canvas id="chart-inv-pl"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Inventory by Company</div></div><div class="chart-container" style="display:flex;justify-content:center"><canvas id="chart-inv-co"></canvas></div></div>
+    </div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Gross Margin Distribution</div></div><div class="chart-container"><canvas id="chart-margin-dist"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Reorder Alerts</div><div class="card-subtitle">Items below reorder point</div></div>
+        <div class="table-container" style="max-height:300px"><table class="data-table"><thead><tr><th>Item</th><th>Company</th><th class="num">On Hand</th><th class="num">Reorder Pt</th><th class="num">Std Cost</th><th>Status</th></tr></thead><tbody>
+        ${allProducts.filter(p=>p.qtyOnHand<=p.reorderPoint).sort((a,b)=>a.qtyOnHand-b.qtyOnHand).slice(0,20).map(p=>`<tr>
+          <td style="font-family:var(--mono);font-size:.78rem">${p.item}</td><td>${p.company}</td>
+          <td class="num ${p.qtyOnHand<=p.safetyStock?'negative':''}">${Math.round(p.qtyOnHand)}</td>
+          <td class="num">${Math.round(p.reorderPoint)}</td>
+          <td class="num currency">${fmtMoneyK(p.stdCost)}</td>
+          <td><span class="badge ${p.qtyOnHand<=p.safetyStock?'badge-red':'badge-yellow'}">${p.qtyOnHand<=p.safetyStock?'CRITICAL':'LOW'}</span></td>
+        </tr>`).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+  `;
+  setTimeout(()=>{
+    drawHorizontalBar('chart-inv-pl',plSorted.slice(0,8).map(x=>x[0]),plSorted.slice(0,8).map(x=>x[1]),'#06b6d4');
+    const coLabels=coVal.map(x=>x.code),coData=coVal.map(x=>x.value),coColors=coVal.map(x=>x.color);
+    drawDonutChart('chart-inv-co',coLabels,coData,coColors,{centerText:fmtMoneyK(totalInv),centerLabel:'Total'});
+    drawBarChart('chart-margin-dist',Object.keys(marginBuckets),[{data:Object.values(marginBuckets),color:'#10b981'}]);
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AR AGING
+// ═══════════════════════════════════════════════════════════════
+function renderARAging(){
+  const ar=filterByCompany(DW.arInvoices).filter(x=>x.balance>0);
+  const totalAR=ar.reduce((a,x)=>a+x.balance,0);
+  const current=ar.reduce((a,x)=>a+x.bucketCurrent,0);
+  const b1_30=ar.reduce((a,x)=>a+x.bucket1_30,0);
+  const b31_60=ar.reduce((a,x)=>a+x.bucket31_60,0);
+  const b61_90=ar.reduce((a,x)=>a+x.bucket61_90,0);
+  const bOver90=ar.reduce((a,x)=>a+x.bucketOver90,0);
+  const avgDays=ar.length?ar.reduce((a,x)=>a+x.daysPastDue,0)/ar.length:0;
+
+  // Top overdue customers
+  const custOverdue={};
+  ar.filter(x=>x.daysPastDue>0).forEach(x=>{custOverdue[x.customer.name]=(custOverdue[x.customer.name]||0)+x.balance});
+  const topOverdue=Object.entries(custOverdue).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  // By company
+  const companies=filterCompanies();
+  const arByCo=companies.map(co=>ar.filter(x=>x.company===co.code).reduce((a,x)=>a+x.balance,0));
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-5 mb-20">
+      <div class="kpi-card blue"><div class="kpi-label">Total AR Outstanding</div><div class="kpi-value">${fmtMoneyK(totalAR)}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Current</div><div class="kpi-value">${fmtMoneyK(current)}</div><div class="kpi-change up">${(current/totalAR*100).toFixed(0)}% of total</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">1-30 Days</div><div class="kpi-value">${fmtMoneyK(b1_30)}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">31-90 Days</div><div class="kpi-value">${fmtMoneyK(b31_60+b61_90)}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Over 90 Days</div><div class="kpi-value">${fmtMoneyK(bOver90)}</div><div class="kpi-change down">Needs attention</div></div>
+    </div>
+    <div class="card mb-20">
+      <div class="card-header"><div class="card-title">AR Aging Distribution</div></div>
+      <div class="aging-bar">
+        ${current/totalAR*100>2?`<div class="segment seg-current" style="flex:${current}">${fmtMoneyK(current)}</div>`:''}
+        ${b1_30/totalAR*100>2?`<div class="segment seg-30" style="flex:${b1_30}">${fmtMoneyK(b1_30)}</div>`:''}
+        ${b31_60/totalAR*100>2?`<div class="segment seg-60" style="flex:${b31_60}">${fmtMoneyK(b31_60)}</div>`:''}
+        ${b61_90/totalAR*100>2?`<div class="segment seg-90" style="flex:${b61_90}">${fmtMoneyK(b61_90)}</div>`:''}
+        ${bOver90/totalAR*100>2?`<div class="segment seg-over" style="flex:${bOver90}">${fmtMoneyK(bOver90)}</div>`:''}
+      </div>
+      <div class="aging-legend">
+        <span><span class="dot" style="background:var(--green)"></span>Current</span>
+        <span><span class="dot" style="background:var(--accent)"></span>1-30 Days</span>
+        <span><span class="dot" style="background:var(--yellow)"></span>31-60 Days</span>
+        <span><span class="dot" style="background:var(--orange)"></span>61-90 Days</span>
+        <span><span class="dot" style="background:var(--red)"></span>Over 90 Days</span>
+      </div>
+    </div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Top 10 Overdue Customers</div></div><div class="chart-container"><canvas id="chart-ar-overdue"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">AR by Company</div></div><div class="chart-container" style="display:flex;justify-content:center"><canvas id="chart-ar-co"></canvas></div></div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Overdue Invoice Detail</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>Company</th><th>Invoice</th><th>Customer</th><th>Due Date</th><th class="num">Amount</th><th class="num">Balance</th><th class="num">Days Past</th><th>Bucket</th></tr></thead><tbody>
+      ${ar.filter(x=>x.daysPastDue>0).sort((a,b)=>b.daysPastDue-a.daysPastDue).slice(0,25).map(x=>`<tr>
+        <td><span style="color:${COMPANIES.find(co=>co.code===x.company)?.color}">●</span> ${x.company}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${x.invNum}</td>
+        <td>${x.customer.name.length>20?x.customer.name.slice(0,20)+'…':x.customer.name}</td>
+        <td>${fmtDate(x.dueDate)}</td>
+        <td class="num">${fmtMoneyK(x.amount)}</td>
+        <td class="num currency">${fmtMoneyK(x.balance)}</td>
+        <td class="num ${x.daysPastDue>90?'negative':''}">${x.daysPastDue}</td>
+        <td><span class="badge ${x.daysPastDue>90?'badge-red':x.daysPastDue>60?'badge-yellow':x.daysPastDue>30?'badge-yellow':'badge-blue'}">${x.daysPastDue>90?'90+':x.daysPastDue>60?'61-90':x.daysPastDue>30?'31-60':'1-30'}</span></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  `;
+  setTimeout(()=>{
+    drawHorizontalBar('chart-ar-overdue',topOverdue.map(x=>x[0].length>18?x[0].slice(0,18)+'…':x[0]),topOverdue.map(x=>x[1]),'#ef4444');
+    drawDonutChart('chart-ar-co',companies.map(x=>x.code),arByCo,companies.map(x=>x.color),{centerText:fmtMoneyK(totalAR),centerLabel:'Total AR'});
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AP AGING
+// ═══════════════════════════════════════════════════════════════
+function renderAPAging(){
+  const ap=filterByCompany(DW.apInvoices).filter(x=>x.balance>0);
+  const totalAP=ap.reduce((a,x)=>a+x.balance,0);
+  const current=ap.reduce((a,x)=>a+x.bucketCurrent,0);
+  const b1_30=ap.reduce((a,x)=>a+x.bucket1_30,0);
+  const b31_60=ap.reduce((a,x)=>a+x.bucket31_60,0);
+  const b61_90=ap.reduce((a,x)=>a+x.bucket61_90,0);
+  const bOver90=ap.reduce((a,x)=>a+x.bucketOver90,0);
+
+  const vendorOverdue={};
+  ap.filter(x=>x.daysPastDue>0).forEach(x=>{vendorOverdue[x.vendor.name]=(vendorOverdue[x.vendor.name]||0)+x.balance});
+  const topOverdue=Object.entries(vendorOverdue).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  const companies=filterCompanies();
+  const apByCo=companies.map(co=>ap.filter(x=>x.company===co.code).reduce((a,x)=>a+x.balance,0));
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-5 mb-20">
+      <div class="kpi-card yellow"><div class="kpi-label">Total AP Outstanding</div><div class="kpi-value">${fmtMoneyK(totalAP)}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Current</div><div class="kpi-value">${fmtMoneyK(current)}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">1-30 Days</div><div class="kpi-value">${fmtMoneyK(b1_30)}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">31-90 Days</div><div class="kpi-value">${fmtMoneyK(b31_60+b61_90)}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Over 90 Days</div><div class="kpi-value">${fmtMoneyK(bOver90)}</div></div>
+    </div>
+    <div class="card mb-20">
+      <div class="card-header"><div class="card-title">AP Aging Distribution</div></div>
+      <div class="aging-bar">
+        ${current/totalAP*100>2?`<div class="segment seg-current" style="flex:${current}">${fmtMoneyK(current)}</div>`:''}
+        ${b1_30/totalAP*100>2?`<div class="segment seg-30" style="flex:${b1_30}">${fmtMoneyK(b1_30)}</div>`:''}
+        ${b31_60/totalAP*100>2?`<div class="segment seg-60" style="flex:${b31_60}">${fmtMoneyK(b31_60)}</div>`:''}
+        ${b61_90/totalAP*100>2?`<div class="segment seg-90" style="flex:${b61_90}">${fmtMoneyK(b61_90)}</div>`:''}
+        ${bOver90/totalAP*100>2?`<div class="segment seg-over" style="flex:${bOver90}">${fmtMoneyK(bOver90)}</div>`:''}
+      </div>
+      <div class="aging-legend">
+        <span><span class="dot" style="background:var(--green)"></span>Current</span>
+        <span><span class="dot" style="background:var(--accent)"></span>1-30 Days</span>
+        <span><span class="dot" style="background:var(--yellow)"></span>31-60 Days</span>
+        <span><span class="dot" style="background:var(--orange)"></span>61-90 Days</span>
+        <span><span class="dot" style="background:var(--red)"></span>Over 90 Days</span>
+      </div>
+    </div>
+    <div class="grid-2 mb-20">
+      <div class="card"><div class="card-header"><div class="card-title">Top 10 Overdue Vendors</div></div><div class="chart-container"><canvas id="chart-ap-overdue"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">AP by Company</div></div><div class="chart-container" style="display:flex;justify-content:center"><canvas id="chart-ap-co"></canvas></div></div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Overdue AP Detail</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>Company</th><th>Invoice</th><th>Vendor</th><th>Due Date</th><th class="num">Amount</th><th class="num">Balance</th><th class="num">Days Past</th><th>Bucket</th></tr></thead><tbody>
+      ${ap.filter(x=>x.daysPastDue>0).sort((a,b)=>b.daysPastDue-a.daysPastDue).slice(0,25).map(x=>`<tr>
+        <td><span style="color:${COMPANIES.find(co=>co.code===x.company)?.color}">●</span> ${x.company}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${x.invNum}</td>
+        <td>${x.vendor.name.length>20?x.vendor.name.slice(0,20)+'…':x.vendor.name}</td>
+        <td>${fmtDate(x.dueDate)}</td>
+        <td class="num">${fmtMoneyK(x.amount)}</td>
+        <td class="num currency">${fmtMoneyK(x.balance)}</td>
+        <td class="num ${x.daysPastDue>90?'negative':''}">${x.daysPastDue}</td>
+        <td><span class="badge ${x.daysPastDue>90?'badge-red':x.daysPastDue>60?'badge-yellow':'badge-blue'}">${x.daysPastDue>90?'90+':x.daysPastDue>60?'61-90':x.daysPastDue>30?'31-60':'1-30'}</span></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  `;
+  setTimeout(()=>{
+    drawHorizontalBar('chart-ap-overdue',topOverdue.map(x=>x[0].length>18?x[0].slice(0,18)+'…':x[0]),topOverdue.map(x=>x[1]),'#f97316');
+    drawDonutChart('chart-ap-co',companies.map(x=>x.code),apByCo,companies.map(x=>x.color),{centerText:fmtMoneyK(totalAP),centerLabel:'Total AP'});
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ARCHITECTURE
+// ═══════════════════════════════════════════════════════════════
+function renderArchitecture(){
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="card mb-20">
+      <div class="card-header"><div class="card-title">Data Warehouse Architecture — Apex Manufacturing Group</div><div class="card-subtitle">On-Premise SQL Server • 5 Entities • Star Schema</div></div>
+      <div class="arch-layer">
+        <h3>📡 Source Systems — Pervasive SQL (EVO ERP)</h3>
+        <div class="arch-sources">
+          ${COMPANIES.map(co=>`<div class="arch-source"><div class="src-name" style="color:${co.color}">${co.code}</div><div class="src-detail">${co.name}</div><div class="src-detail">${co.city}, ${co.state}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="arch-arrow-down">▼ ODBC / pyodbc ▼</div>
+      <div class="arch-layer">
+        <h3>📥 Layer 1: Staging (stg.*)</h3>
+        <div class="arch-tables">
+          ${['customers','vendors','materials','sales_orders','purchase_orders','ar_invoices','ap_invoices'].map(t=>
+            COMPANIES.map(co=>`<div class="arch-table">stg.${t}_${co.code.toLowerCase()}</div>`).join('')
+          ).join('')}
+        </div>
+        <p style="margin-top:8px;font-size:.72rem;color:var(--text3)">Raw data as-is from source • All fields stored as VARCHAR • Batch ID tagged</p>
+      </div>
+      <div class="arch-arrow-down">▼ Cleanse & Transform ▼</div>
+      <div class="arch-layer">
+        <h3>🧹 Layer 2: Cleansed (cln.*)</h3>
+        <div class="arch-tables">
+          ${['customer_master','vendor_master','product_master','sales_orders','purchase_orders','ar_invoices','ap_invoices','material_costs','intercompany_transactions'].map(t=>
+            `<div class="arch-table">cln.${t}</div>`
+          ).join('')}
+        </div>
+        <p style="margin-top:8px;font-size:.72rem;color:var(--text3)">Standardized names/codes • Date parsing • Decimal casting • Deduplication • Row hashing</p>
+      </div>
+      <div class="arch-arrow-down">▼ Load to Star Schema ▼</div>
+      <div class="arch-layer">
+        <h3>⭐ Layer 3: Data Warehouse (dw.*)</h3>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.75rem;color:var(--cyan);font-weight:700;margin-bottom:6px">DIMENSIONS</div>
+            <div class="arch-tables">
+              ${['dim_company','dim_customer','dim_vendor','dim_product','dim_date','dim_warehouse','dim_gl_account'].map(t=>
+                `<div class="arch-table">dw.${t}</div>`
+              ).join('')}
+            </div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.75rem;color:var(--green);font-weight:700;margin-bottom:6px">FACTS</div>
+            <div class="arch-tables">
+              ${['fact_sales_orders','fact_purchase_orders','fact_material_costs','fact_ar_aging','fact_ap_aging','fact_intercompany','fact_gl_transactions'].map(t=>
+                `<div class="arch-table">dw.${t}</div>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:8px;font-size:.72rem;color:var(--text3)">Surrogate keys (IDENTITY) • SCD Type 2 on dimensions • Columnstore indexes on facts</p>
+      </div>
+      <div class="arch-arrow-down">▼ Pre-built Views ▼</div>
+      <div class="arch-layer">
+        <h3>📊 Layer 4: Reporting (rpt.*)</h3>
+        <div class="arch-tables">
+          ${['vw_sales_performance','vw_purchase_tracking','vw_cost_analysis','vw_ar_aging_detail','vw_ap_aging_detail','vw_executive_summary','vw_entity_comparison','vw_intercompany_reconciliation'].map(t=>
+            `<div class="arch-table">rpt.${t}</div>`
+          ).join('')}
+        </div>
+        <p style="margin-top:8px;font-size:.72rem;color:var(--text3)">Pre-optimized for BI • Parameterized by company, date range, entity group</p>
+      </div>
+      <div class="arch-arrow-down">▼ Power BI ▼</div>
+      <div class="arch-layer">
+        <h3>📈 BI Layer — Power BI Dashboards</h3>
+        <div class="arch-sources">
+          ${['Sales Performance','Purchase Tracking','Cost & Inventory','AR Aging','AP Aging','Executive Summary'].map(d=>
+            `<div class="arch-source"><div class="src-name">${d}</div><div class="src-detail">Interactive dashboard</div></div>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ETL PIPELINE
+// ═══════════════════════════════════════════════════════════════
+function renderETL(){
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="card mb-20">
+      <div class="card-header"><div class="card-title">ETL Pipeline Status</div><div class="card-subtitle">Last run: Today 2:00 AM — Batch: ${document.getElementById('batch-id').textContent}</div></div>
+      <div class="pipeline">
+        <div class="pipeline-stage complete"><div class="stage-icon">📡</div><div class="stage-name">Extract</div><div class="stage-detail">Pervasive SQL → CSV</div><div class="stage-count" style="color:var(--green)">✓ 5 sources</div></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-stage complete"><div class="stage-icon">📥</div><div class="stage-name">Stage</div><div class="stage-detail">Load to stg.* tables</div><div class="stage-count" style="color:var(--green)">✓ 12,847 rows</div></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-stage complete"><div class="stage-icon">🧹</div><div class="stage-name">Cleanse</div><div class="stage-detail">Standardize & type</div><div class="stage-count" style="color:var(--green)">✓ 12,619 clean</div></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-stage complete"><div class="stage-icon">⭐</div><div class="stage-name">Load Dims</div><div class="stage-detail">SCD Type 2 merge</div><div class="stage-count" style="color:var(--green)">✓ 426 dims</div></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-stage complete"><div class="stage-icon">📊</div><div class="stage-name">Load Facts</div><div class="stage-detail">Insert fact rows</div><div class="stage-count" style="color:var(--green)">✓ 14,407 facts</div></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-stage complete"><div class="stage-icon">🔄</div><div class="stage-name">Post-Process</div><div class="stage-detail">ICT detect, stats</div><div class="stage-count" style="color:var(--green)">✓ 47 ICT</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">ETL Job Log</div><div class="card-subtitle">${DW.etlLog.length} jobs in last run</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>#</th><th>Job</th><th>Layer</th><th>Table</th><th>Status</th><th class="num">Rows</th><th>Time</th><th>Duration</th><th>Note</th></tr></thead><tbody>
+      ${DW.etlLog.map(l=>`<tr>
+        <td>${l.id}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${l.job}</td>
+        <td><span class="badge badge-blue">${l.layer}</span></td>
+        <td style="font-family:var(--mono);font-size:.75rem">${l.table}</td>
+        <td><span class="badge ${l.status==='SUCCESS'?'badge-green':l.status==='WARNING'?'badge-yellow':'badge-red'}">${l.status}</span></td>
+        <td class="num">${fmtNum(l.rows)}</td>
+        <td>${l.time}</td>
+        <td style="font-family:var(--mono)">${l.duration}</td>
+        <td style="font-size:.72rem;color:var(--text3)">${l.note||'—'}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERCOMPANY
+// ═══════════════════════════════════════════════════════════════
+function renderIntercompany(){
+  const ict=DW.intercompany;
+  const totalRev=ict.reduce((a,x)=>a+x.sellRevenue,0);
+  const totalExp=ict.reduce((a,x)=>a+x.buyExpense,0);
+  const totalMargin=ict.reduce((a,x)=>a+x.margin,0);
+  const matched=ict.filter(x=>x.status==='MATCHED'||x.status==='RECONCILED').length;
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="grid-4 mb-20">
+      <div class="kpi-card blue"><div class="kpi-label">IC Transactions</div><div class="kpi-value">${ict.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Selling Revenue</div><div class="kpi-value">${fmtMoneyK(totalRev)}</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Buying Expense</div><div class="kpi-value">${fmtMoneyK(totalExp)}</div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">Reconciled</div><div class="kpi-value">${matched}/${ict.length}</div><div class="kpi-change ${matched/ict.length>0.8?'up':'down'}">${(matched/ict.length*100).toFixed(0)}% match rate</div></div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Intercompany Transactions</div><div class="card-subtitle">Cross-entity selling/buying pairs</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>ID</th><th>Date</th><th>Seller</th><th>Buyer</th><th>Product</th><th class="num">Qty</th><th class="num">Sell $</th><th class="num">Buy $</th><th class="num">Margin</th><th>Status</th></tr></thead><tbody>
+      ${ict.sort((a,b)=>b.date-a.date).map(x=>`<tr>
+        <td style="font-family:var(--mono);font-size:.75rem">${x.id}</td>
+        <td>${fmtDate(x.date)}</td>
+        <td><span style="color:${x.seller.color}">●</span> ${x.seller.code}</td>
+        <td><span style="color:${x.buyer.color}">●</span> ${x.buyer.code}</td>
+        <td>${x.product.desc.length>22?x.product.desc.slice(0,22)+'…':x.product.desc}</td>
+        <td class="num">${Math.round(x.qty)}</td>
+        <td class="num currency">${fmtMoneyK(x.sellRevenue)}</td>
+        <td class="num">${fmtMoneyK(x.buyExpense)}</td>
+        <td class="num ${x.margin>0?'currency':'negative'}">${fmtMoneyK(x.margin)}</td>
+        <td><span class="badge ${x.status==='MATCHED'||x.status==='RECONCILED'?'badge-green':x.status==='PENDING'?'badge-yellow':'badge-red'}">${x.status}</span></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA QUALITY
+// ═══════════════════════════════════════════════════════════════
+function renderDataQuality(){
+  const c=document.getElementById('content');
+  const warnings=DW.dqIssues.filter(x=>x.severity==='WARNING').length;
+  const infos=DW.dqIssues.filter(x=>x.severity==='INFO').length;
+  const totalAffected=DW.dqIssues.reduce((a,x)=>a+x.affected,0);
+
+  c.innerHTML=`
+    <div class="grid-4 mb-20">
+      <div class="kpi-card green"><div class="kpi-label">Data Quality Score</div><div class="kpi-value">97.8%</div><div class="kpi-change up">Excellent</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Warnings</div><div class="kpi-value">${warnings}</div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">Info Items</div><div class="kpi-value">${infos}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Rows Affected</div><div class="kpi-value">${fmtNum(totalAffected)}</div></div>
+    </div>
+    <div class="card mb-20"><div class="card-header"><div class="card-title">Data Quality Issues</div><div class="card-subtitle">Issues detected during last ETL run</div></div>
+      <div class="table-container"><table class="data-table"><thead><tr><th>Severity</th><th>Source</th><th>Table</th><th>Rule</th><th class="num">Affected</th><th>Detail</th></tr></thead><tbody>
+      ${DW.dqIssues.map(x=>`<tr>
+        <td><span class="badge ${x.severity==='WARNING'?'badge-yellow':x.severity==='ERROR'?'badge-red':'badge-blue'}">${x.severity}</span></td>
+        <td>${x.source}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${x.table}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${x.rule}</td>
+        <td class="num">${fmtNum(x.affected)}</td>
+        <td style="font-size:.78rem">${x.detail}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Quality Rules Applied</div></div>
+      <table class="data-table"><thead><tr><th>Rule</th><th>Layer</th><th>Action</th></tr></thead><tbody>
+      <tr><td>NULL_CUSTOMER_ID</td><td>Staging</td><td><span class="badge badge-red">REJECT</span> Row excluded</td></tr>
+      <tr><td>INVALID_DATE_FORMAT</td><td>Cleanse</td><td><span class="badge badge-yellow">PARSE</span> Multiple formats attempted</td></tr>
+      <tr><td>DUPLICATE_ORDER_LINE</td><td>Cleanse</td><td><span class="badge badge-yellow">DEDUP</span> MD5 hash comparison</td></tr>
+      <tr><td>INCONSISTENT_STATE</td><td>Cleanse</td><td><span class="badge badge-blue">STANDARDIZE</span> Full name → abbreviation</td></tr>
+      <tr><td>EXTRA_SPACES</td><td>Cleanse</td><td><span class="badge badge-blue">TRIM</span> Whitespace normalization</td></tr>
+      <tr><td>ZERO_BALANCE_RECALC</td><td>Cleanse</td><td><span class="badge badge-blue">RECALC</span> Invoice - Paid = Balance</td></tr>
+      <tr><td>NAME_STANDARDIZATION</td><td>Cleanse</td><td><span class="badge badge-blue">TITLE CASE</span> Consistent casing</td></tr>
+      </tbody></table>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCHEMA EXPLORER
+// ═══════════════════════════════════════════════════════════════
+function renderSchema(){
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="card mb-20"><div class="card-header"><div class="card-title">Database Schema Explorer</div><div class="card-subtitle">MFG_DataWarehouse — 5 schemas, 40+ tables</div></div>
+    ${Object.entries(DW.schemas).map(([key,schema])=>`
+      <div class="arch-layer" style="border-left:3px solid ${schema.color}">
+        <h3 style="color:${schema.color}">${key}.* — ${schema.label}</h3>
+        <p style="font-size:.75rem;color:var(--text3);margin-bottom:10px">${schema.desc}</p>
+        <div class="arch-tables">
+          ${schema.tables.map(t=>`<div class="arch-table">${key}.${t}</div>`).join('')}
+        </div>
+      </div>
+    `).join('')}
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Star Schema Relationships</div></div>
+      <pre style="font-family:var(--mono);font-size:.75rem;color:var(--text2);line-height:1.8;overflow-x:auto">
+fact_sales_orders.company_key    → dim_company.company_key
+fact_sales_orders.customer_key   → dim_customer.customer_key
+fact_sales_orders.product_key    → dim_product.product_key
+fact_sales_orders.order_date_key → dim_date.date_key
+
+fact_purchase_orders.company_key → dim_company.company_key
+fact_purchase_orders.vendor_key  → dim_vendor.vendor_key
+fact_purchase_orders.product_key → dim_product.product_key
+fact_purchase_orders.po_date_key → dim_date.date_key
+
+fact_ar_aging.company_key        → dim_company.company_key
+fact_ar_aging.customer_key       → dim_customer.customer_key
+fact_ar_aging.due_date_key       → dim_date.date_key
+
+fact_ap_aging.company_key        → dim_company.company_key
+fact_ap_aging.vendor_key         → dim_vendor.vendor_key
+fact_ap_aging.due_date_key       → dim_date.date_key
+
+dim_customer (SCD Type 2): is_current, valid_from, valid_to, row_hash
+dim_vendor   (SCD Type 2): is_current, valid_from, valid_to, row_hash
+dim_product  (SCD Type 2): is_current, valid_from, valid_to, row_hash
+      </pre>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENTATION
+// ═══════════════════════════════════════════════════════════════
+function renderDocs(){
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="card mb-20">
+      <div class="card-header"><div class="card-title">Documentation</div></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchDocTab(this,'doc-overview')">Overview</div>
+        <div class="tab" onclick="switchDocTab(this,'doc-setup')">Setup Guide</div>
+        <div class="tab" onclick="switchDocTab(this,'doc-etl')">ETL Process</div>
+        <div class="tab" onclick="switchDocTab(this,'doc-glossary')">Glossary</div>
+      </div>
+      <div class="tab-content active" id="doc-overview">
+        <h3 style="margin-bottom:12px">System Overview</h3>
+        <p style="color:var(--text2);line-height:1.7;margin-bottom:12px">This data warehouse consolidates ERP data from 5 manufacturing entities running EVO ERP on Pervasive SQL databases. The system uses a layered architecture with staging, cleansing, dimensional modeling, and reporting layers.</p>
+        <h4 style="margin:16px 0 8px;color:var(--accent3)">Entity Structure</h4>
+        <table class="data-table"><thead><tr><th>Code</th><th>Company</th><th>Division</th><th>Location</th></tr></thead><tbody>
+        ${COMPANIES.map(co=>`<tr><td><span style="color:${co.color}">●</span> ${co.code}</td><td>${co.name}</td><td>${co.group}</td><td>${co.city}, ${co.state}</td></tr>`).join('')}
+        </tbody></table>
+        <h4 style="margin:16px 0 8px;color:var(--accent3)">Data Flow</h4>
+        <p style="color:var(--text2);line-height:1.7">Source (Pervasive SQL) → Extract (Python/pyodbc) → Staging (stg.*) → Cleanse (cln.*) → Dimensions (dw.dim_*) → Facts (dw.fact_*) → Views (rpt.vw_*) → Power BI Dashboards</p>
+      </div>
+      <div class="tab-content" id="doc-setup">
+        <h3 style="margin-bottom:12px">Setup Guide</h3>
+        <div style="color:var(--text2);line-height:1.8">
+          <h4 style="color:var(--accent3);margin:12px 0 6px">1. SQL Server Setup</h4>
+          <ul style="padding-left:20px"><li>SQL Server 2022 Enterprise/Standard</li><li>Create database with separate filegroups for staging, warehouse, indexes</li><li>Run schema scripts in order: 01 through 09</li></ul>
+          <h4 style="color:var(--accent3);margin:12px 0 6px">2. ODBC Configuration</h4>
+          <ul style="padding-left:20px"><li>Install Pervasive ODBC Client on ETL server</li><li>Create System DSN for each ERP source</li><li>Test connections to all 5 servers</li></ul>
+          <h4 style="color:var(--accent3);margin:12px 0 6px">3. Python ETL</h4>
+          <ul style="padding-left:20px"><li>Python 3.10+ with pyodbc, pandas, numpy</li><li>Configure config.json with server details</li><li>Schedule via Windows Task Scheduler (daily 2 AM)</li></ul>
+          <h4 style="color:var(--accent3);margin:12px 0 6px">4. Power BI</h4>
+          <ul style="padding-left:20px"><li>Connect to SQL Server via rpt.* views</li><li>Configure relationships per data model</li><li>Add DAX measures for KPIs</li></ul>
+        </div>
+      </div>
+      <div class="tab-content" id="doc-etl">
+        <h3 style="margin-bottom:12px">ETL Process Details</h3>
+        <div style="color:var(--text2);line-height:1.8">
+          <h4 style="color:var(--accent3);margin:12px 0 6px">Extract Phase</h4>
+          <p>Data extracted from each Pervasive SQL source via ODBC. All fields captured as strings to preserve source fidelity. Each row tagged with batch ID and source system.</p>
+          <h4 style="color:var(--accent3);margin:12px 0 6px">Cleanse Phase</h4>
+          <p>Date parsing (multiple formats), decimal casting, name standardization (title case), state abbreviation mapping, whitespace normalization, deduplication via MD5 hashing.</p>
+          <h4 style="color:var(--accent3);margin:12px 0 6px">Load Phase</h4>
+          <p>Dimensions loaded with SCD Type 2 (expire changed, insert new). Facts loaded with surrogate key lookups. Intercompany transactions detected by matching items across entities.</p>
+          <h4 style="color:var(--accent3);margin:12px 0 6px">Error Handling</h4>
+          <p>All ETL operations logged to etl.job_log. Data quality issues tracked in etl.data_quality_log. Failed jobs trigger retry (3 attempts). Critical errors halt pipeline.</p>
+        </div>
+      </div>
+      <div class="tab-content" id="doc-glossary">
+        <h3 style="margin-bottom:12px">Glossary</h3>
+        <table class="data-table"><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>
+        <tr><td><strong>AR</strong></td><td>Accounts Receivable — money owed TO the company by customers</td></tr>
+        <tr><td><strong>AP</strong></td><td>Accounts Payable — money owed BY the company to vendors</td></tr>
+        <tr><td><strong>Aging Bucket</strong></td><td>Time range for overdue amounts (Current, 1-30, 31-60, 61-90, 90+)</td></tr>
+        <tr><td><strong>SCD Type 2</strong></td><td>Slowly Changing Dimension — preserves history with valid_from/valid_to dates</td></tr>
+        <tr><td><strong>Fill Rate</strong></td><td>Percentage of ordered quantity that was actually shipped</td></tr>
+        <tr><td><strong>Standard Cost</strong></td><td>Predetermined cost for a product, set by engineering/accounting</td></tr>
+        <tr><td><strong>Intercompany</strong></td><td>Transactions between entities within the same parent organization</td></tr>
+        <tr><td><strong>ETL</strong></td><td>Extract, Transform, Load — the data pipeline process</td></tr>
+        <tr><td><strong>Star Schema</strong></td><td>Database design with fact tables surrounded by dimension tables</td></tr>
+        <tr><td><strong>Columnstore</strong></td><td>Index type optimized for analytical queries on large fact tables</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  `;
+}
+
+function switchDocTab(el,tabId){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  el.parentElement.parentElement.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════════
+function runETL(){
+  const modal=document.getElementById('etl-modal');
+  const log=document.getElementById('etl-log');
+  modal.classList.add('show');
+  log.innerHTML='<p style="color:var(--text3)">Starting ETL pipeline...</p>';
+
+  const steps=[
+    {msg:'Connecting to Data Warehouse...',delay:400},
+    {msg:'<span class="badge badge-green">OK</span> Connected to MFG_DataWarehouse',delay:300},
+    {msg:'<br>━━━ PHASE 1: EXTRACT ━━━',delay:200},
+    {msg:'Extracting APXP — sales_orders... <span class="badge badge-green">1,847 rows</span>',delay:500},
+    {msg:'Extracting APXM — sales_orders... <span class="badge badge-green">2,103 rows</span>',delay:400},
+    {msg:'Extracting INPC — purchase_orders... <span class="badge badge-green">1,654 rows</span>',delay:400},
+    {msg:'Extracting HDCO — vendors... <span class="badge badge-green">987 rows</span>',delay:300},
+    {msg:'Extracting CUST — ar_invoices... <span class="badge badge-yellow">WARNING: 12 null dates</span>',delay:400},
+    {msg:'<br>━━━ PHASE 2: STAGING ━━━',delay:200},
+    {msg:'Loading stg.sales_orders_apxp... <span class="badge badge-green">1,847 rows</span>',delay:300},
+    {msg:'Loading stg.sales_orders_apxm... <span class="badge badge-green">2,103 rows</span>',delay:300},
+    {msg:'Loading all staging tables... <span class="badge badge-green">12,847 total rows</span>',delay:500},
+    {msg:'<br>━━━ PHASE 3: CLEANSE ━━━',delay:200},
+    {msg:'Standardizing names... <span class="badge badge-blue">142 records</span>',delay:300},
+    {msg:'Parsing dates (5 formats)... <span class="badge badge-blue">8,421 records</span>',delay:400},
+    {msg:'Deduplicating... <span class="badge badge-yellow">23 duplicates removed</span>',delay:300},
+    {msg:'Casting decimals... <span class="badge badge-green">OK</span>',delay:200},
+    {msg:'<br>━━━ PHASE 4: LOAD DIMENSIONS ━━━',delay:200},
+    {msg:'dw.dim_customer (SCD2)... <span class="badge badge-green">178 inserted, 3 expired</span>',delay:400},
+    {msg:'dw.dim_vendor (SCD2)... <span class="badge badge-green">92 inserted, 1 expired</span>',delay:300},
+    {msg:'dw.dim_product (SCD2)... <span class="badge badge-green">156 inserted, 5 expired</span>',delay:300},
+    {msg:'<br>━━━ PHASE 5: LOAD FACTS ━━━',delay:200},
+    {msg:'dw.fact_sales_orders... <span class="badge badge-green">7,487 rows</span>',delay:400},
+    {msg:'dw.fact_purchase_orders... <span class="badge badge-green">4,532 rows</span>',delay:400},
+    {msg:'dw.fact_ar_aging... <span class="badge badge-green">2,341 rows</span>',delay:300},
+    {msg:'dw.fact_ap_aging... <span class="badge badge-green">1,876 rows</span>',delay:300},
+    {msg:'dw.fact_material_costs... <span class="badge badge-green">423 rows</span>',delay:300},
+    {msg:'<br>━━━ PHASE 6: POST-PROCESS ━━━',delay:200},
+    {msg:'Detecting intercompany transactions... <span class="badge badge-green">47 detected</span>',delay:400},
+    {msg:'Updating statistics... <span class="badge badge-green">OK</span>',delay:300},
+    {msg:'<br><span style="color:var(--green);font-weight:700;font-size:1.1rem">✓ ETL PIPELINE COMPLETE — 47.2 seconds</span>',delay:0},
+  ];
+
+  let delay=0;
+  steps.forEach(step=>{
+    delay+=step.delay;
+    setTimeout(()=>{log.innerHTML+=`<div style="font-family:var(--mono);font-size:.78rem;margin:3px 0;color:var(--text2)">${step.msg}</div>`;log.scrollTop=log.scrollHeight},delay);
+  });
+}
+
+function closeModal(){document.getElementById('etl-modal').classList.remove('show')}
+
+function exportCSV(){
+  const sales=filterByCompany(DW.salesOrders);
+  let csv='Company,Order#,Date,Customer,Product,Qty,Price,Extended,Status\n';
+  sales.slice(0,500).forEach(s=>{
+    csv+=`${s.company},${s.orderNum},${fmtDate(s.date)},"${s.customer.name}","${s.product.desc}",${Math.round(s.qtyOrdered)},${s.unitPrice.toFixed(2)},${s.extPrice.toFixed(2)},${s.status}\n`;
+  });
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`sales_export_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('batch-id').textContent=Array.from({length:8},()=>R.pick('0123456789abcdef')).join('');
+
+// roundRect polyfill
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);this.lineTo(x+r,y+h);
+    this.quadraticCurveTo(x,y+h,x,y+h-r);this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);this.closePath();
+  };
+}
+
+// Array.shuffle polyfill
+if(!Array.prototype.shuffle){Array.prototype.shuffle=function(){const a=[...this];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}}
+
+showPage('executive');
+</script>
+</body>
+</html>
+```
